@@ -10,7 +10,7 @@ import (
 
 	jwt "github.com/dgrijalva/jwt-go"
 
-	pb "example.com/go-usermgmt-grpc/usermgmt"
+	pb "example.com/go-usermgmt-grpc"
 	"google.golang.org/grpc"
 )
 
