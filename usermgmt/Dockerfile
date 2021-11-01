@@ -1,8 +1,9 @@
-FROM golang:1.13 AS build
+FROM golang:1.17 AS build
 
 WORKDIR /compose/
 COPY usermgmt.proto usermgmt.proto
-protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative usermgmt.proto
+COPY usermgmt.pb.go usermgmt.pb.go
+COPY usermgmt_grpc.pb.go usermgmt_grpc.pb.go
 
 FROM scratch
 COPY --from=build /compose/usermgmt /usr/local/bin/usermgmt
