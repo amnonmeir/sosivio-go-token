@@ -1,0 +1,17 @@
+syntax = "proto3";
+
+package usermgmt;
+
+option go_package = "./;grpcpb";
+
+service UserManagement {
+  rpc CreateMsg (Msg) returns (stream Returned) {}
+}
+
+message Msg {
+  string tkn = 1;
+}
+
+message Returned {
+  string str = 1;
+}
