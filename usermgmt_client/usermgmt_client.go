@@ -5,8 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"net/http"
-	"strings"
+	"net"
 
 	pb "dir/usermgmt"
 
@@ -15,23 +14,28 @@ import (
 
 const (
 	address = "localhost:50051"
+	port    = ":50050"
 )
 
-func set(w http.ResponseWriter, req *http.Request) {
-	var url string = req.URL.String()
-
-	//json.Unmarshal(str, &params)
-	values := strings.Split(url[5:], ",") //Get the data string,start where the data begin and split it to two values
-	connectToServer(w, values[0]+" "+values[1])
-
+type UserManagementServer struct { //create struct of grpc
+	pb.UnimplementedUserManagementServer
 }
-func connectToServer(w http.ResponseWriter, name string) {
 
-	//go func() {
+//get msg from the client
+func (*UserManagementServer) CreateMsg(req *pb.Msg, stream pb.UserManagement_CreateMsgServer) error {
+
+	name := req.GetTkn()
+	fmt.Println("name %v", name)
+	connectToServer(name, stream)
+	return nil
+}
+
+//connect to the sever
+func connectToServer(name string, stream pb.UserManagement_CreateMsgServer) {
+
 	conn, err := grpc.Dial(address, grpc.WithInsecure(), grpc.WithBlock())
 	if err != nil {
 		log.Fatalf("did not connect: %v", err)
-		fmt.Fprintln(w, "did not connect to server")
 	}
 	defer conn.Close()
 	c := pb.NewUserManagementClient(conn)
@@ -54,12 +58,19 @@ func connectToServer(w http.ResponseWriter, name string) {
 			log.Fatalf("error while reading stream: %v", err)
 		}
 		log.Printf("Response from CreateMsg: %v", msg.GetStr())
-		fmt.Fprintln(w, msg.GetStr())
+		res := &pb.Returned{Str: msg.GetStr()}
+		stream.Send(res) //send to the client
 	}
-	//}()
 }
 func main() {
-	http.HandleFunc("/set", set)
-
-	http.ListenAndServe(":50050", nil)
+	lis, err := net.Listen("tcp", port)
+	if err != nil {
+		log.Fatalf("failed to listen: %v", err)
+	}
+	s := grpc.NewServer() //open listener connection to client
+	pb.RegisterUserManagementServer(s, &UserManagementServer{})
+	log.Printf("server listening at %v", lis.Addr())
+	if err := s.Serve(lis); err != nil {
+		log.Fatalf("failed to serve: %v", err)
+	}
 }
