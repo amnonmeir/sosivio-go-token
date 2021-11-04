@@ -1,5 +1,10 @@
 version: "3.7"
 services:
+  rest_api:
+    build: login
+    network_mode: "host"
+    depends_on:
+      - usermgmt_client
   usermgmt_client:
     build: client
     network_mode: "host"
