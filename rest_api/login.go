@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net/http"
 
+	mc "dir/rest_api/connect_to_server"
 	dt "dir/rest_api/data_base"
-	mc "dir/rest_api/makeConnection"
 	tkn "dir/rest_api/tokens"
 )
 
