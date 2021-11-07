@@ -19,9 +19,13 @@ const _ = grpc.SupportPackageIsVersion7
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type UserManagementClient interface {
 	// Unary
-	//  rpc SendAndReturn(UnaryCall) returns (UnaryReturnCall) {};
+	SendAndReturn(ctx context.Context, in *UnaryCall, opts ...grpc.CallOption) (*UnaryReturnCall, error)
 	// Server Streaming
 	ReturnMsgManyTimes(ctx context.Context, in *ServerStreamingCall, opts ...grpc.CallOption) (UserManagement_ReturnMsgManyTimesClient, error)
+	// Client Streaming
+	SendMsgManyTimes(ctx context.Context, opts ...grpc.CallOption) (UserManagement_SendMsgManyTimesClient, error)
+	// Duo Streaming
+	BothMsgManyTimes(ctx context.Context, opts ...grpc.CallOption) (UserManagement_BothMsgManyTimesClient, error)
 }
 
 type userManagementClient struct {
@@ -30,6 +34,15 @@ type userManagementClient struct {
 
 func NewUserManagementClient(cc grpc.ClientConnInterface) UserManagementClient {
 	return &userManagementClient{cc}
+}
+
+func (c *userManagementClient) SendAndReturn(ctx context.Context, in *UnaryCall, opts ...grpc.CallOption) (*UnaryReturnCall, error) {
+	out := new(UnaryReturnCall)
+	err := c.cc.Invoke(ctx, "/usermgmt.UserManagement/SendAndReturn", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
 }
 
 func (c *userManagementClient) ReturnMsgManyTimes(ctx context.Context, in *ServerStreamingCall, opts ...grpc.CallOption) (UserManagement_ReturnMsgManyTimesClient, error) {
@@ -64,14 +77,83 @@ func (x *userManagementReturnMsgManyTimesClient) Recv() (*ServerStreamingReturnC
 	return m, nil
 }
 
+func (c *userManagementClient) SendMsgManyTimes(ctx context.Context, opts ...grpc.CallOption) (UserManagement_SendMsgManyTimesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &UserManagement_ServiceDesc.Streams[1], "/usermgmt.UserManagement/SendMsgManyTimes", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &userManagementSendMsgManyTimesClient{stream}
+	return x, nil
+}
+
+type UserManagement_SendMsgManyTimesClient interface {
+	Send(*ClientStreamingCall) error
+	CloseAndRecv() (*ClientStreamingReturnCall, error)
+	grpc.ClientStream
+}
+
+type userManagementSendMsgManyTimesClient struct {
+	grpc.ClientStream
+}
+
+func (x *userManagementSendMsgManyTimesClient) Send(m *ClientStreamingCall) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *userManagementSendMsgManyTimesClient) CloseAndRecv() (*ClientStreamingReturnCall, error) {
+	if err := x.ClientStream.CloseSend(); err != nil {
+		return nil, err
+	}
+	m := new(ClientStreamingReturnCall)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func (c *userManagementClient) BothMsgManyTimes(ctx context.Context, opts ...grpc.CallOption) (UserManagement_BothMsgManyTimesClient, error) {
+	stream, err := c.cc.NewStream(ctx, &UserManagement_ServiceDesc.Streams[2], "/usermgmt.UserManagement/BothMsgManyTimes", opts...)
+	if err != nil {
+		return nil, err
+	}
+	x := &userManagementBothMsgManyTimesClient{stream}
+	return x, nil
+}
+
+type UserManagement_BothMsgManyTimesClient interface {
+	Send(*DuoStreamingCall) error
+	Recv() (*DuoStreamingReturnCall, error)
+	grpc.ClientStream
+}
+
+type userManagementBothMsgManyTimesClient struct {
+	grpc.ClientStream
+}
+
+func (x *userManagementBothMsgManyTimesClient) Send(m *DuoStreamingCall) error {
+	return x.ClientStream.SendMsg(m)
+}
+
+func (x *userManagementBothMsgManyTimesClient) Recv() (*DuoStreamingReturnCall, error) {
+	m := new(DuoStreamingReturnCall)
+	if err := x.ClientStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // UserManagementServer is the server API for UserManagement service.
 // All implementations must embed UnimplementedUserManagementServer
 // for forward compatibility
 type UserManagementServer interface {
 	// Unary
-	//  rpc SendAndReturn(UnaryCall) returns (UnaryReturnCall) {};
+	SendAndReturn(context.Context, *UnaryCall) (*UnaryReturnCall, error)
 	// Server Streaming
 	ReturnMsgManyTimes(*ServerStreamingCall, UserManagement_ReturnMsgManyTimesServer) error
+	// Client Streaming
+	SendMsgManyTimes(UserManagement_SendMsgManyTimesServer) error
+	// Duo Streaming
+	BothMsgManyTimes(UserManagement_BothMsgManyTimesServer) error
 	mustEmbedUnimplementedUserManagementServer()
 }
 
@@ -79,8 +161,17 @@ type UserManagementServer interface {
 type UnimplementedUserManagementServer struct {
 }
 
+func (UnimplementedUserManagementServer) SendAndReturn(context.Context, *UnaryCall) (*UnaryReturnCall, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SendAndReturn not implemented")
+}
 func (UnimplementedUserManagementServer) ReturnMsgManyTimes(*ServerStreamingCall, UserManagement_ReturnMsgManyTimesServer) error {
 	return status.Errorf(codes.Unimplemented, "method ReturnMsgManyTimes not implemented")
+}
+func (UnimplementedUserManagementServer) SendMsgManyTimes(UserManagement_SendMsgManyTimesServer) error {
+	return status.Errorf(codes.Unimplemented, "method SendMsgManyTimes not implemented")
+}
+func (UnimplementedUserManagementServer) BothMsgManyTimes(UserManagement_BothMsgManyTimesServer) error {
+	return status.Errorf(codes.Unimplemented, "method BothMsgManyTimes not implemented")
 }
 func (UnimplementedUserManagementServer) mustEmbedUnimplementedUserManagementServer() {}
 
@@ -93,6 +184,24 @@ type UnsafeUserManagementServer interface {
 
 func RegisterUserManagementServer(s grpc.ServiceRegistrar, srv UserManagementServer) {
 	s.RegisterService(&UserManagement_ServiceDesc, srv)
+}
+
+func _UserManagement_SendAndReturn_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(UnaryCall)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(UserManagementServer).SendAndReturn(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/usermgmt.UserManagement/SendAndReturn",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(UserManagementServer).SendAndReturn(ctx, req.(*UnaryCall))
+	}
+	return interceptor(ctx, in, info, handler)
 }
 
 func _UserManagement_ReturnMsgManyTimes_Handler(srv interface{}, stream grpc.ServerStream) error {
@@ -116,18 +225,86 @@ func (x *userManagementReturnMsgManyTimesServer) Send(m *ServerStreamingReturnCa
 	return x.ServerStream.SendMsg(m)
 }
 
+func _UserManagement_SendMsgManyTimes_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(UserManagementServer).SendMsgManyTimes(&userManagementSendMsgManyTimesServer{stream})
+}
+
+type UserManagement_SendMsgManyTimesServer interface {
+	SendAndClose(*ClientStreamingReturnCall) error
+	Recv() (*ClientStreamingCall, error)
+	grpc.ServerStream
+}
+
+type userManagementSendMsgManyTimesServer struct {
+	grpc.ServerStream
+}
+
+func (x *userManagementSendMsgManyTimesServer) SendAndClose(m *ClientStreamingReturnCall) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *userManagementSendMsgManyTimesServer) Recv() (*ClientStreamingCall, error) {
+	m := new(ClientStreamingCall)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
+func _UserManagement_BothMsgManyTimes_Handler(srv interface{}, stream grpc.ServerStream) error {
+	return srv.(UserManagementServer).BothMsgManyTimes(&userManagementBothMsgManyTimesServer{stream})
+}
+
+type UserManagement_BothMsgManyTimesServer interface {
+	Send(*DuoStreamingReturnCall) error
+	Recv() (*DuoStreamingCall, error)
+	grpc.ServerStream
+}
+
+type userManagementBothMsgManyTimesServer struct {
+	grpc.ServerStream
+}
+
+func (x *userManagementBothMsgManyTimesServer) Send(m *DuoStreamingReturnCall) error {
+	return x.ServerStream.SendMsg(m)
+}
+
+func (x *userManagementBothMsgManyTimesServer) Recv() (*DuoStreamingCall, error) {
+	m := new(DuoStreamingCall)
+	if err := x.ServerStream.RecvMsg(m); err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // UserManagement_ServiceDesc is the grpc.ServiceDesc for UserManagement service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
 var UserManagement_ServiceDesc = grpc.ServiceDesc{
 	ServiceName: "usermgmt.UserManagement",
 	HandlerType: (*UserManagementServer)(nil),
-	Methods:     []grpc.MethodDesc{},
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "SendAndReturn",
+			Handler:    _UserManagement_SendAndReturn_Handler,
+		},
+	},
 	Streams: []grpc.StreamDesc{
 		{
 			StreamName:    "ReturnMsgManyTimes",
 			Handler:       _UserManagement_ReturnMsgManyTimes_Handler,
 			ServerStreams: true,
+		},
+		{
+			StreamName:    "SendMsgManyTimes",
+			Handler:       _UserManagement_SendMsgManyTimes_Handler,
+			ClientStreams: true,
+		},
+		{
+			StreamName:    "BothMsgManyTimes",
+			Handler:       _UserManagement_BothMsgManyTimes_Handler,
+			ServerStreams: true,
+			ClientStreams: true,
 		},
 	},
 	Metadata: "usermgmt.proto",

@@ -6,13 +6,13 @@ option go_package = "./;grpcpb";
 
 service UserManagement {
   // Unary
-//  rpc SendAndReturn(UnaryCall) returns (UnaryReturnCall) {};
+  rpc SendAndReturn(UnaryCall) returns (UnaryReturnCall) {};
   // Server Streaming
   rpc ReturnMsgManyTimes(ServerStreamingCall) returns (stream ServerStreamingReturnCall) {};
   // Client Streaming
- // rpc SendMsgManyTimes(stream ClientStreamingCall) returns (ClientStreamingReturnCall) {};
+  rpc SendMsgManyTimes(stream ClientStreamingCall) returns (ClientStreamingReturnCall) {};
   // Duo Streaming
-//  rpc BothMsgManyTimes(stream DuoStreamingCall) returns (stream DuoStreamingReturnCall) {};
+  rpc BothMsgManyTimes(stream DuoStreamingCall) returns (stream DuoStreamingReturnCall) {};
 }
 
 message UnaryCall {
