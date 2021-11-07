@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"strings"
 
-	_ "github.com/go-sql-driver/mysql"
+	_ "github.com/lib/pq"
 
 	cr "dir/rest_api/car"
 	mc "dir/rest_api/connect_to_server"
@@ -34,7 +34,7 @@ func main() {
 	http.HandleFunc("/create_car", createCar)
 	http.HandleFunc("/update_car", updateCar)
 	http.HandleFunc("/delete_car", deleteCar)
-	http.ListenAndServe(":8080", nil)
+	http.ListenAndServe(":8888", nil)
 }
 func index(w http.ResponseWriter, req *http.Request) {
 
@@ -237,7 +237,7 @@ func check_token_validity(key string) bool {
 }
 func init() {
 	var err error
-	DB, err = sql.Open("mysql", "amnon:1234@tcp(127.0.0.1:3306)/dbclient")
+	DB, err = sql.Open("postgres", "postgres://amnon:1234@localhost/dbclient?sslmode=disable")
 	if err != nil {
 		panic(err.Error())
 	}
