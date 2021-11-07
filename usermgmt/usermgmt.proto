@@ -1,0 +1,46 @@
+syntax = "proto3";
+
+package usermgmt;
+
+option go_package = "./;grpcpb";
+
+service UserManagement {
+  // Unary
+//  rpc SendAndReturn(UnaryCall) returns (UnaryReturnCall) {};
+  // Server Streaming
+  rpc ReturnMsgManyTimes(ServerStreamingCall) returns (stream ServerStreamingReturnCall) {};
+  // Client Streaming
+ // rpc SendMsgManyTimes(stream ClientStreamingCall) returns (ClientStreamingReturnCall) {};
+  // Duo Streaming
+//  rpc BothMsgManyTimes(stream DuoStreamingCall) returns (stream DuoStreamingReturnCall) {};
+}
+
+message UnaryCall {
+  string appeal = 1;
+}
+
+message UnaryReturnCall {
+  string answer = 1;
+}
+message ServerStreamingCall {
+  string appeal = 1;
+}
+
+message ServerStreamingReturnCall {
+  string answer = 1;
+}
+message ClientStreamingCall {
+  string appeal = 1;
+}
+
+message ClientStreamingReturnCall {
+  string answer = 1;
+}
+message DuoStreamingCall {
+  string appeal = 1;
+}
+
+message DuoStreamingReturnCall {
+  string answer = 1;
+}
+
