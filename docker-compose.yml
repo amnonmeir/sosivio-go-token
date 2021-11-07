@@ -1,56 +1,5 @@
 version: "3.7"
 services:
-  auth_api:
-    build:
-      dockerfile: Dockerfile
-      context: ./auth_api
-    ports:
-      - "8080:8080"
-    depends_on:
-      - postgres
-    environment:
-      POSTGRES_USER: amnon
-      POSTGRES_PASSWORD: 1234
-      POSTGRES_DB: dbclient
-  sender_api:
-    build:
-      dockerfile: Dockerfile
-      context: ./sender_api
-    ports:
-      - "8081:8081" 
-    depends_on:
-      - nsqd
-      - nsqlookupd
-  listener_api:
-    build:
-      dockerfile: Dockerfile
-      context: ./listener_api
-    ports:
-      - "8082:8082"
-    depends_on:
-      - nsqd
-      - nsqlookupd
-  nsqlookupd:
-    image: nsqio/nsq
-    command: /nsqlookupd
-    ports:
-      - "4160:4160"
-      - "4161:4160"
-  nsqd:
-    image: nsqio/nsq
-    command: /nsqd --lookupd-tcp-address=nsqlookupd:4160
-    depends_on:
-      - nsqlookupd
-    ports:
-      - "4150:4150"
-      - "4151:4151"
-  nsqadmin:
-    image: nsqio/nsq
-    command: /nsqadmin --lookupd-http-address=nsqlookupd:4161
-    depends_on:
-      - nsqlookupd  
-    ports:
-      - "4171:4171"
   postgres:
     image: postgres:10.6
     ports:
@@ -61,19 +10,27 @@ services:
       POSTGRES_DB: dbclient
   rest_api:
     build: login
+    ports:
+      - "8888:8888"
     network_mode: "host"
     depends_on:
       - usermgmt_client
   usermgmt_client:
     build: client
+    ports:
+      - "50050:50050"
     network_mode: "host"
     depends_on:
       - usermgmt_server
   usermgmt_server:
     build: server
+    ports:
+      - "50051:50051"
     network_mode: "host"
     depends_on:
       - usermgmt
   usermgmt:
     build: proto
     network_mode: "host"
+    depends_on:
+      - postgres
