@@ -1,5 +1,5 @@
 version: "3.7"
-services:services:
+services:
   auth_api:
     build:
       dockerfile: Dockerfile
@@ -9,10 +9,9 @@ services:services:
     depends_on:
       - postgres
     environment:
-      - POSTGRES_USER
-      - POSTGRES_PASSWORD
-      - POSTGRES_DB
-      - SECRET
+      POSTGRES_USER: amnon
+      POSTGRES_PASSWORD: 1234
+      POSTGRES_DB: dbclient
   sender_api:
     build:
       dockerfile: Dockerfile
