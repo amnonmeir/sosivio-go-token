@@ -1,0 +1,17 @@
+CREATE DATABASE dbclient
+
+-- Creation of product table
+CREATE TABLE IF NOT EXISTS t_person(
+  PRIMARY KEY (id),
+  model varchar(20) NOT NULL,
+  color varchar(10) NOT NULL,
+  year INT NOT NULL
+);
+
+-- Creation of order_status table
+CREATE TABLE IF NOT EXISTS t_car(
+  PRIMARY KEY (id),
+  first varchar(20) NOT NULL,
+  last varchar(30) NOT NULL,
+  telephone varchar(16) NOT NULL
+);
