@@ -3,34 +3,39 @@ services:
   postgres:
     image: postgres:10.6
     ports:
-      - '3002:5432'
+      - '5432:5432'
     environment:
       POSTGRES_USER: amnon
       POSTGRES_PASSWORD: 1234
       POSTGRES_DB: dbclient
+  go_mod:
+    build: ./
+    network_mode: "host"
+    depends_on:
+      - postgres
   rest_api:
-    build: login
+    build: rest_api
     ports:
       - "8888:8888"
     network_mode: "host"
     depends_on:
       - usermgmt_client
   usermgmt_client:
-    build: client
+    build: usermgmt_client
     ports:
       - "50050:50050"
     network_mode: "host"
     depends_on:
-      - usermgmt_server
+      - usermgmt
   usermgmt_server:
-    build: server
+    build: usermgmt_server
     ports:
       - "50051:50051"
     network_mode: "host"
     depends_on:
       - usermgmt
   usermgmt:
-    build: proto
+    build: usermgmt
     network_mode: "host"
     depends_on:
       - postgres
