@@ -5,23 +5,22 @@ WORKDIR /compose/
 COPY login.go login.go
 
 RUN mkdir /tokens
-COPY token.go token.go
+COPY tokens/token.go tokens/token.go
 
 RUN mkdir /data
-COPY data.go data.go
+COPY data/data.go data/data.go
 
 RUN mkdir /person
-COPY person.go person.go
+COPY person/person.go person/person.go
 
 RUN mkdir /car
-COPY car.go car.go
+COPY car/car.go car/car.go
 
 RUN mkdir /connect_to_server
-COPY makeConnection.go makeConnection.go
+COPY connect_to_server/makeConnection.go connect_to_server/makeConnection.go
 
-RUN go mod download
 RUN CGO_ENABLED=0 go build -o rest_api login.go
-ENV 
+
 FROM scratch
 COPY --from=build /compose/rest_api /usr/local/bin/rest_api
 COPY --from=build /compose/rest_api/tokens /usr/local/bin/rest_api/tokens
