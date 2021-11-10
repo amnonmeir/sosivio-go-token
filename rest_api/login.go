@@ -1,13 +1,13 @@
 package main
 
 import (
-	"database/sql"
 	"fmt"
 	"net/http"
 	"strings"
 
 	_ "github.com/lib/pq"
 
+	db "dir/rest_api/DB"
 	cr "dir/rest_api/car"
 	mc "dir/rest_api/connect_to_server"
 	dt "dir/rest_api/data"
@@ -18,7 +18,6 @@ import (
 var Users = make(map[string]string)
 
 var dbUsers = map[string]dt.User{}
-var DB *sql.DB
 
 func main() {
 	http.HandleFunc("/", index)
@@ -92,7 +91,7 @@ func readPersons(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	var p = pn.Persons{}
-	p = p.Read(DB)
+	p = p.Read(db.DB)
 	for _, person := range p.Per {
 		fmt.Fprintln(w, person.ID, person.First, person.Last, person.Telephone)
 	}
@@ -106,7 +105,7 @@ func readPerson(w http.ResponseWriter, req *http.Request) {
 	var p = pn.Person{
 		ID: values[2],
 	}
-	p.ReadRow(DB)
+	p.ReadRow(db.DB)
 	fmt.Fprintln(w, p.ID, p.First, p.Last, p.Telephone)
 
 }
@@ -122,7 +121,7 @@ func createPerson(w http.ResponseWriter, req *http.Request) {
 		Last:      values[4],
 		Telephone: values[5],
 	}
-	p.Create(DB)
+	p.Create(db.DB)
 }
 func updatePerson(w http.ResponseWriter, req *http.Request) {
 	var url string = req.URL.String()
@@ -136,7 +135,7 @@ func updatePerson(w http.ResponseWriter, req *http.Request) {
 		Last:      values[4],
 		Telephone: values[5],
 	}
-	p.Update(DB)
+	p.Update(db.DB)
 }
 func deletePerson(w http.ResponseWriter, req *http.Request) {
 	var url string = req.URL.String()
@@ -150,7 +149,7 @@ func deletePerson(w http.ResponseWriter, req *http.Request) {
 		Last:      values[4],
 		Telephone: values[5],
 	}
-	p.Delete(DB)
+	p.Delete(db.DB)
 }
 
 func readCars(w http.ResponseWriter, req *http.Request) {
@@ -160,7 +159,7 @@ func readCars(w http.ResponseWriter, req *http.Request) {
 		return
 	}
 	var c = cr.Cars{}
-	c = c.Read(DB)
+	c = c.Read(db.DB)
 	for _, car := range c.Cr {
 		fmt.Fprintln(w, car.ID, car.Model, car.Color, car.Year)
 	}
@@ -174,7 +173,7 @@ func readCar(w http.ResponseWriter, req *http.Request) {
 	var c = cr.Car{
 		ID: values[2],
 	}
-	c.ReadRow(DB)
+	c.ReadRow(db.DB)
 	fmt.Fprintln(w, c.ID, c.Model, c.Color, c.Year)
 
 }
@@ -190,7 +189,7 @@ func createCar(w http.ResponseWriter, req *http.Request) {
 		Color: values[4],
 		Year:  values[5],
 	}
-	c.Create(DB)
+	c.Create(db.DB)
 }
 func updateCar(w http.ResponseWriter, req *http.Request) {
 	var url string = req.URL.String()
@@ -204,7 +203,7 @@ func updateCar(w http.ResponseWriter, req *http.Request) {
 		Color: values[4],
 		Year:  values[5],
 	}
-	c.Update(DB)
+	c.Update(db.DB)
 }
 func deleteCar(w http.ResponseWriter, req *http.Request) {
 	var url string = req.URL.String()
@@ -218,7 +217,7 @@ func deleteCar(w http.ResponseWriter, req *http.Request) {
 		Color: values[4],
 		Year:  values[5],
 	}
-	c.Delete(DB)
+	c.Delete(db.DB)
 }
 func check_token_validity(key string) bool {
 
@@ -234,15 +233,4 @@ func check_token_validity(key string) bool {
 	} else {
 		return false
 	}
-}
-func init() {
-	var err error
-	DB, err = sql.Open("postgres", "postgres://amnon:1234@localhost/dbclient?sslmode=disable")
-	if err != nil {
-		panic(err.Error())
-	}
-	if err = DB.Ping(); err != nil {
-		panic(err)
-	}
-	fmt.Println("Connected to DB")
 }
