@@ -5,14 +5,6 @@ import (
 	"fmt"
 )
 
-type Data_base_commands interface{}
-type Data_base interface {
-	Read(DB *sql.DB)
-	ReadRow(DB *sql.DB)
-	Create(DB *sql.DB)
-	Update(DB *sql.DB)
-	Delete(DB *sql.DB)
-}
 type Person struct {
 	ID        string `Json: "id"`
 	First     string `Json: "first"`
